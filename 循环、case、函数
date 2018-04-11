@@ -1,0 +1,132 @@
+###for循环
+  for  变量名  in  {1..5}
+do
+    命令序列
+done
+
+for  变量名  in  `seq 5`
+do
+    命令序列
+done
+
+批量检测多个主机的存活状态
+#!/bin/bash
+for i in {1..254}
+do
+    ping -c 3 -i 0.2 -W 1 192.168.4.$i &> /dev/null
+    if [ $? -eq 0 ] ; then
+        echo "Host 192.168.4.$i is up."
+    else
+        echo "Host 192.168.4.$i is down."
+    fi
+done
+#########################################################################################################
+while循环属于条件式的执行流程，会反复判断指定的测试条件，只要条件成立即执行固定的一组操作，直到条件变化为不成立为止。
+所以while循环的条件一般通过变量来进行控制，在循环体内对变量值做相应改变，以便在适当的时候退出，避免陷入死循环。
+
+while循环的语法结构如下所示：
+while  条件测试
+do
+    命令序列
+done
+
+死循环的一般格式：
+ #!/bin/bash
+while :
+do
+        echo "hello world"
+done
+
+猜随机数
+#!/bin/bash
+num=$[RANDOM%100+1]
+i=0
+while :
+do
+   read -p "随机数1-100,你猜:" guess
+   let i++                                    //猜一次，计数器加1，统计猜的次数
+   if [ $guess -eq $num ];then
+        echo "恭喜，猜对了"
+        echo "你猜了$i次"
+        exit
+   elif [ $guess -gt $num ];then
+        echo "猜大了"
+   else 
+        echo "猜小了"
+   fi 
+
+检测192.168.4.0/24网段，列出不在线的主机地址
+   #!/bin/bash
+i=1
+while [ $i -le 254 ]
+do
+    IP="192.168.4.$i"
+    ping -c 3 -i 0.2 -W 1 $IP &> /dev/null
+    if [ $? -eq 0 ] ; then
+        echo "Host $IP is up."
+    else
+        echo "Host $IP is down."
+    fi
+    let i++
+done
+##############################################################################################################
+case分支的语法结构如下所示：
+case  变量值  in
+模式1)
+    命令序列1 ;;
+模式2)
+    命令序列2 ;;
+    .. ..
+*)
+    默认命令序列
+esac
+########################
+#!/bin/bash
+case $1 in
+redhat)
+        echo "fedora";;
+fedora)
+        echo "redhat";;
+    *)                                              //默认输出脚本用法
+    echo "用法: $0 {redhat|fedora}"
+    exit 1
+esac
+#############################################################################################################
+函数的定义方法:
+ function  函数名 {
+    命令序列
+    .. ..
+}
+
+格式2：
+ 函数名() {
+    命令序列
+    .. ..
+}
+
+颜色输出的命令:echo -e "\033[32mOK\033[0m"。
+3X为字体颜色，4X为背景颜色。
+
+函数调用脚本
+#!/bin/bash
+cecho() {
+    echo –e "\033[$1m$2\033[0m"
+}
+cecho 32 OK
+cecho 33 OK
+cecho 34 OK
+cecho 35 OK
+################################################################################################################
+中断及退出
+通过break、continue、exit在Shell脚本中实现中断与退出的功能。
+break可以结束整个循环；continue结束本次循环，进入下一次循环；exit结束整个脚本
+
+#!/bin/bash
+i=0
+while  [ $i -le 20 ]
+do
+    let i++
+    [ $[i%6] -ne 0 ]  &&  continue
+    echo $[i*i]
+done
+exit 2
