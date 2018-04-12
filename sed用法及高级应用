@@ -1,0 +1,56 @@
+sed文本处理工具的用法：
+用法1：前置命令 | sed  [选项]  '条件指令'
+用法2：sed  [选项]  '条件指令'  文件.. ..
+    条件可以是行号或者/正则/
+    没有条件时，默认为所有条件
+    指令可以是增、删、改、查等指令     p:打印   d:删除   s:替换
+    默认sed会将所有输出的内容都打印出来，可以使用-n屏蔽默认输出
+    选项中可以使用-r选项，让sed支持扩展正则
+sed命令的常用选项如下：
+    -n（屏蔽默认输出，默认sed会输出读取文档的全部内容）
+    -r（让sed支持扩展正则）
+    -i（sed直接修改源文件，默认sed只是通过内存临时修改文件，源文件无影响）
+    [root@svr5 ~]# sed  -n '3,6p' /etc/passwd             //打印第三行到第六行的信息
+    [root@svr5 ~]# sed -i '1,4d' test.txt                 //删除操作
+    多个指令可以使用分号隔离
+    [root@svr5 ~]# sed -n '1p;4p' /etc/passwd             //打印第一行与第四行
+    [root@svr5 ~]# sed -n '3,+10p' /etc/passwd            //打印第三行及后面的十行
+    [root@svr5 ~]# sed -n '1~2p' /etc/passwd              //打印奇数行
+    [root@svr5 ~]# sed -n '2~2p' /etc/passwd              //打印偶数行
+    [root@svr5 ~]# sed -n '/root/p' /etc/passwd           //打印包含root的行
+    [root@svr5 ~]# sed -n '/bash$/p' /etc/passwd          //打印以bash结尾的行
+    [root@svr5 ~]# sed  -n '$=' a.txt                     //输出文件的行数
+    [root@svr5 ~]# sed  '/xml/!d' a.txt                   //删除不包含xml的行，!符号表示取反
+    [root@svr5 ~]# sed 's/xml/XML/' a.txt                 //将每行中第一个xml替换为XML
+    [root@svr5 ~]# sed 's/xml/XML/3' a.txt                //将每行中的第3个xml替换为XML
+    [root@svr5 ~]# sed 's/xml/XML/g' a.txt                //将所有的xml都替换为XML
+    [root@svr5 ~]# sed 's/xml//g' a.txt                   //将所有的xml都删除（替换为空串）
+    [root@svr5 ~]# sed 's#/bin/bash#/sbin/sh#' a.txt      //将/bin/bash替换为/sbin/sh
+    [root@svr5 ~]# sed '4,7s/^/#/' a.txt                  //将第4~7行注释掉（行首加#号）
+    [root@svr5 ~]# sed 's/^#an/an/' a.txt                 //解除以#an开头的行的注释（去除行首的#号）
+第一次替换掉第2个字符，第二次替换掉最后一个字符：
+    [root@svr5 ~]# sed 's/.//2 ; s/.$//' nssw.txt 
+将文件中每行的第一个、第二个字符互换
+    [root@svr5 ~]# sed -r 's/^(.)(.*)(.)$/\2\1\3/' nssw.txt
+    [root@svr5 ~]# sed 's/[0-9]//' nssw.txt               //删除文件中的所有数字
+    [root@svr5 ~]# sed -r 's/[0-9]//g;s/^( )+//' nssw2.txt    //删除所有数字 行首空格
+    [root@svr5 ~]# sed 's/([A-Z])/[\1]/g' nssw.txt          //为文件中每个大写字母添加括号
+################################################################################################
+sed多分支
+sed工具的多行文本处理操作：
+i：在指定的行之前插入文本
+a：在指定的行之后追加文本
+c：替换指定的行
+[root@svr5 ~]# sed  '2a XX'   a.txt            //在第二行后面，追加XX
+综合脚本
+   过滤/etc/passswd提取用户名 调出/etc/shadow/中用户的密码，仅输出用户名及密码
+[root@svr5 ~]# vim ./getupwd.sh  
+#/bin/bash
+A=$(sed -n '/bash$/s/.*://p' /etc/passwd)             ## 提取符合条件的账号记录
+for i in  $A                                         ##遍历账号记录
+do
+    pass1=$(grep $i /etc/shadow)
+    pass2=${pass1#*:}
+    pass=${pass%%:*}
+    echo  "$i   --> $pass"
+done
